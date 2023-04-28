@@ -1,6 +1,5 @@
 package org.example;
 
-import org.dom4j.DocumentException;
 import org.example.context.ClassPathXmlApplicationContext;
 import org.example.test.AService;
 
