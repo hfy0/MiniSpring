@@ -1,14 +1,17 @@
 package org.example.test;
 
+import org.example.beans.annotation.Autowired;
+
 public class BaseService {
-    private BaseBaseService bbs;
+    @Autowired
+    private BaseBaseService baseBaseService;
 
     public BaseBaseService getBbs() {
-        return bbs;
+        return baseBaseService;
     }
 
     public void setBbs(BaseBaseService bbs) {
-        this.bbs = bbs;
+        this.baseBaseService = bbs;
     }
 
     public BaseService() {
@@ -16,6 +19,6 @@ public class BaseService {
 
     public void sayHello() {
         System.out.print("Base Service says hello");
-        bbs.sayHello();
+        baseBaseService.sayHello();
     }
 }

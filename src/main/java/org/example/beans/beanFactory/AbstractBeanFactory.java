@@ -1,5 +1,7 @@
-package org.example.beans;
+package org.example.beans.beanFactory;
 
+import org.example.beans.BeanDefinition;
+import org.example.beans.BeansException;
 import org.example.beans.beanRegistry.DefaultSingletonBeanRegistry;
 import org.example.beans.value.ArgumentValue;
 import org.example.beans.value.ArgumentValues;
@@ -16,7 +18,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-public class SimpleBeanFactory extends DefaultSingletonBeanRegistry {
+public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry {
 
     /**
      * BeanDefinition 相关
@@ -59,14 +61,25 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry {
             singleton = this.earlySingletonObjects.get(beanName);
             if (singleton == null) {
                 BeanDefinition bd = beanDefinitionMap.get(beanName);
+                // 利用反射机制，创建对象并给对象的属性赋值
                 singleton = createBean(bd);
+                // 将创建好的对象存储起来
                 this.registerBean(beanName, singleton);
 
-                // TODO beanpostprocessor
+                // beanPostProcessor (Bean处理器)
                 // step 1 : postProcessBeforeInitialization
-                // step 2 : afterPropertiesSet
-                // step 3 : init-method
-                // step 4 : postProcessAfterInitialization。
+                // 在调用 initMethodName 指定的方法进行 Bean 的初始化工作前，对 Bean 进行处理
+                applyBeanPostProcessorsBeforeInitialization(singleton, beanName);
+
+                // step 2 : init-method
+                // 调用 initMethodName 指定的方法进行 Bean 的初始化工作
+                if (bd.getInitMethodName() != null && !bd.getInitMethodName().equals("")) {
+                    invokeInitMethod(bd, singleton);
+                }
+
+                // step 3 : postProcessAfterInitialization
+                // 在调用 initMethodName 指定的方法进行 Bean 的初始化工作后，对 Bean 进行处理
+                applyBeanPostProcessorsAfterInitialization(singleton, beanName);
             }
 
         }
@@ -76,12 +89,40 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry {
         return singleton;
     }
 
+    private void invokeInitMethod(BeanDefinition bd, Object obj) {
+        Class<?> clz = obj.getClass();
+        Method method = null;
+        try {
+            method = clz.getMethod(bd.getInitMethodName());
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+        try {
+            method.invoke(obj);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public void registerBean(String beanName, Object obj) {
         this.registerSingleton(beanName, obj);
 
         // TODO beanpostprocessor
     }
 
+    /**
+     * 利用反射机制，创建对象并给对象的属性赋值
+     *
+     * @param beanDefinition
+     * @return
+     */
     private Object createBean(BeanDefinition beanDefinition) {
         Class<?> clazz = null;
         // 利用反射机制，使用构造器创建对象
@@ -236,4 +277,10 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry {
             }
         }
     }
+
+    abstract public Object applyBeanPostProcessorsBeforeInitialization(Object existingBean, String beanName)
+            throws BeansException;
+
+    abstract public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName)
+            throws BeansException;
 }

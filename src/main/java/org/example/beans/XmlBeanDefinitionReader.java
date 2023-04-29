@@ -3,6 +3,7 @@ package org.example.beans;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.example.beans.beanFactory.AbstractBeanFactory;
 import org.example.beans.value.ArgumentValue;
 import org.example.beans.value.ArgumentValues;
 import org.example.beans.value.PropertyValue;
@@ -16,9 +17,9 @@ import java.util.function.Consumer;
 
 public class XmlBeanDefinitionReader {
 
-    SimpleBeanFactory beanFactory;
+    AbstractBeanFactory beanFactory;
 
-    public XmlBeanDefinitionReader(SimpleBeanFactory beanFactory) {
+    public XmlBeanDefinitionReader(AbstractBeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 
@@ -40,7 +41,8 @@ public class XmlBeanDefinitionReader {
                 // 根据 XML 文件中的信息生成 BeanDefinition
                 String beanID = element.attributeValue("id");
                 String beanClassName = element.attributeValue("class");
-                BeanDefinition beanDefinition = new BeanDefinition(beanID, beanClassName);
+                String initMethodName = element.attributeValue("init-method");
+                BeanDefinition beanDefinition = new BeanDefinition(beanID, beanClassName, initMethodName);
 
                 // 使用构造器给对象的属性赋值
                 List<Element> constructorElements = element.elements("constructor-arg");

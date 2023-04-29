@@ -25,6 +25,8 @@ public class BeanDefinition {
 
     private PropertyValues propertyValues;
 
+    private String initMethodName;
+
     private String[] dependsOn;
 
     private boolean lazyInit = true;
@@ -32,6 +34,11 @@ public class BeanDefinition {
     public BeanDefinition(String id, String className) {
         this.id = Objects.requireNonNull(id);
         this.className = Objects.requireNonNull(className);
+    }
+
+    public BeanDefinition(String id, String className, String initMethodName) {
+        this(id, className);
+        this.initMethodName = initMethodName;
     }
 
     public String getId() {
@@ -48,6 +55,10 @@ public class BeanDefinition {
 
     public PropertyValues getPropertyValues() {
         return propertyValues;
+    }
+
+    public String getInitMethodName() {
+        return initMethodName;
     }
 
     public boolean isLazyInit() {

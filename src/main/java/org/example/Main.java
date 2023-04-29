@@ -10,7 +10,7 @@ public class Main {
 
         try {
             ctx = new ClassPathXmlApplicationContext(fileName);
-            AService aService = (AService) ctx.getBean("aservice");
+            AService aService = (AService) ctx.getBean("aService");
             aService.sayHello();
         } catch (Throwable e) {
             e.printStackTrace();
