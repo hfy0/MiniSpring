@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans>
+    <!-- 测试 AOP -->
+    <bean id="action" class="org.example.aop.factoryBean.ProxyFactoryBean">
+        <property type="java.lang.Object" name="target" ref="realAction"/>
+    </bean>
+    <bean id="realAction" class="org.example.test.aop.Action1"/>
+</beans>

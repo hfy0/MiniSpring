@@ -1,4 +1,4 @@
-package org.example.test;
+package org.example.test.ioc;
 
 public class BaseBaseService {
     private AServiceImpl as;

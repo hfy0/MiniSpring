@@ -1,4 +1,4 @@
-package org.example.test;
+package org.example.test.ioc;
 
 import org.example.beans.annotation.Autowired;
 

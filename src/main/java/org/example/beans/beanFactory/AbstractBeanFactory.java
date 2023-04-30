@@ -1,5 +1,7 @@
 package org.example.beans.beanFactory;
 
+import org.example.aop.factoryBean.FactoryBean;
+import org.example.aop.factoryBean.FactoryBeanRegistrySupport;
 import org.example.beans.BeanDefinition;
 import org.example.beans.BeansException;
 import org.example.beans.beanRegistry.DefaultSingletonBeanRegistry;
@@ -18,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry {
+public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport {
 
     /**
      * BeanDefinition 相关
@@ -61,32 +63,53 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry {
             singleton = this.earlySingletonObjects.get(beanName);
             if (singleton == null) {
                 BeanDefinition bd = beanDefinitionMap.get(beanName);
-                // 利用反射机制，创建对象并给对象的属性赋值
-                singleton = createBean(bd);
-                // 将创建好的对象存储起来
-                this.registerBean(beanName, singleton);
+                if (bd != null) {
+                    // 利用反射机制，创建对象并给对象的属性赋值
+                    singleton = createBean(bd);
+                    // 将创建好的对象存储起来
+                    this.registerBean(beanName, singleton);
 
-                // beanPostProcessor (Bean处理器)
-                // step 1 : postProcessBeforeInitialization
-                // 在调用 initMethodName 指定的方法进行 Bean 的初始化工作前，对 Bean 进行处理
-                applyBeanPostProcessorsBeforeInitialization(singleton, beanName);
+                    // beanPostProcessor (Bean处理器)
+                    // step 1 : postProcessBeforeInitialization
+                    // 在调用 initMethodName 指定的方法进行 Bean 的初始化工作前，对 Bean 进行处理
+                    applyBeanPostProcessorsBeforeInitialization(singleton, beanName);
 
-                // step 2 : init-method
-                // 调用 initMethodName 指定的方法进行 Bean 的初始化工作
-                if (bd.getInitMethodName() != null && !bd.getInitMethodName().equals("")) {
-                    invokeInitMethod(bd, singleton);
+                    // step 2 : init-method
+                    // 调用 initMethodName 指定的方法进行 Bean 的初始化工作
+                    if (bd.getInitMethodName() != null && !bd.getInitMethodName().equals("")) {
+                        invokeInitMethod(bd, singleton);
+                    }
+
+                    // step 3 : postProcessAfterInitialization
+                    // 在调用 initMethodName 指定的方法进行 Bean 的初始化工作后，对 Bean 进行处理
+                    applyBeanPostProcessorsAfterInitialization(singleton, beanName);
+                } else {
+                    return null;
                 }
-
-                // step 3 : postProcessAfterInitialization
-                // 在调用 initMethodName 指定的方法进行 Bean 的初始化工作后，对 Bean 进行处理
-                applyBeanPostProcessorsAfterInitialization(singleton, beanName);
             }
+        }
 
+        // process Factory Bean
+        // 处理 Factory Bean
+        if (singleton instanceof FactoryBean) {
+            return this.getObjectForBeanInstance(singleton, beanName);
         }
-        if (singleton == null) {
-            throw new BeansException("bean is null.");
-        }
+
         return singleton;
+    }
+
+    protected Object getObjectForBeanInstance(Object beanInstance, String beanName) {
+        // 如果 beanInstance 不是 FactoryBean，则直接返回
+        if (!(beanInstance instanceof FactoryBean)) {
+            return beanInstance;
+        }
+
+        Object object = null;
+        FactoryBean<?> factoryBean = (FactoryBean<?>) beanInstance;
+        // object 为代理对象
+        System.out.println("factoryBean bean。beanName：" + beanName + "。Object：" + factoryBean);
+        object = getObjectFromFactoryBean(factoryBean, beanName);
+        return object;
     }
 
     private void invokeInitMethod(BeanDefinition bd, Object obj) {
@@ -215,10 +238,11 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry {
      * @param obj
      */
     private void handleProperties(BeanDefinition beanDefinition, Class<?> clazz, Object obj) {
-        System.out.println("利用反射机制，使用 setter() 方法为对象的属性赋值 : " + beanDefinition.getId());
 
         PropertyValues propertyValues = beanDefinition.getPropertyValues();
         if (!propertyValues.isEmpty()) {
+            System.out.println("利用反射机制，使用 setter() 方法为对象的属性赋值 : " + beanDefinition.getId());
+
             for (int i = 0; i < propertyValues.size(); i++) {
                 PropertyValue propertyValue = propertyValues.getPropertyValueList().get(i);
 
