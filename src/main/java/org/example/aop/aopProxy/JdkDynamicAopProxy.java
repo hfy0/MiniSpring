@@ -1,37 +1,41 @@
 package org.example.aop.aopProxy;
 
+import org.example.aop.advice.interceptor.MethodInterceptor;
+import org.example.aop.advisor.Advisor;
+import org.example.aop.methodInvocation.MethodInvocation;
+import org.example.aop.methodInvocation.ReflectiveMethodInvocation;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 public class JdkDynamicAopProxy implements AopProxy, InvocationHandler {
     Object target;
+    Advisor advisor;
 
-    public JdkDynamicAopProxy(Object target) {
+    public JdkDynamicAopProxy(Object target, Advisor advisor) {
         this.target = target;
+        this.advisor = advisor;
     }
-
 
     @Override
     public Object getProxy() {
-        Class<?>[] interfaces = target.getClass().getInterfaces();
-
-        System.out.println("动态创建代理对象。for：" + target + "interfaces：" + interfaces);
-
-        ClassLoader classLoader = JdkDynamicAopProxy.class.getClassLoader();
-        Object obj = Proxy.newProxyInstance(classLoader, interfaces, this);
+        Object obj = Proxy.newProxyInstance(JdkDynamicAopProxy.class.getClassLoader(), target.getClass().getInterfaces(), this);
         return obj;
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if (method.getName().equals("doAction")) {
-            System.out.println("动态代理：在调用被代理对象的方法前调用的代码");
-            Object result = method.invoke(target, args);
-            System.out.println("动态代理：在调用被代理对象的方法后调用的代码");
-            return result;
-        } else {
-            throw new RuntimeException("doAction() 方法不存在");
+
+            Class<?> targetClass = (target != null ? target.getClass() : null);
+            MethodInterceptor interceptor = this.advisor.getMethodInterceptor();
+            MethodInvocation invocation =
+                    new ReflectiveMethodInvocation(proxy, target, method, args, targetClass);
+
+            return interceptor.invoke(invocation);
         }
+        return null;
     }
 }
+

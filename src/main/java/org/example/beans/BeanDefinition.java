@@ -18,6 +18,8 @@ public class BeanDefinition {
 
     private static final String SCOPE_PROTOTYPE = "prototype";
 
+    private String scope = SCOPE_SINGLETON;
+
     private String id;
     private String className;
 
@@ -78,5 +80,12 @@ public class BeanDefinition {
                 (constructorArgumentValues != null ? constructorArgumentValues : new ArgumentValues());
     }
 
+    public boolean isSingleton() {
+        return SCOPE_SINGLETON.equals(scope);
+    }
+
+    public boolean isPrototype() {
+        return SCOPE_PROTOTYPE.equals(scope);
+    }
 
 }

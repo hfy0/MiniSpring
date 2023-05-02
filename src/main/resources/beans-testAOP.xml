@@ -3,6 +3,9 @@
     <!-- 测试 AOP -->
     <bean id="action" class="org.example.aop.factoryBean.ProxyFactoryBean">
         <property type="java.lang.Object" name="target" ref="realAction"/>
+        <property type="String" name="interceptorName" value="myInterceptor"/>
     </bean>
+
     <bean id="realAction" class="org.example.test.aop.Action1"/>
+    <bean id="myInterceptor" class="org.example.test.aop.MyInterceptor"/>
 </beans>

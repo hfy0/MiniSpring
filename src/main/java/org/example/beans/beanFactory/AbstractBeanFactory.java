@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport {
+public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport implements ConfigurableBeanFactory {
 
     /**
      * BeanDefinition 相关
@@ -66,8 +66,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport {
                 if (bd != null) {
                     // 利用反射机制，创建对象并给对象的属性赋值
                     singleton = createBean(bd);
+
                     // 将创建好的对象存储起来
                     this.registerBean(beanName, singleton);
+
+                    if (singleton instanceof BeanFactoryAware) {
+                        ((BeanFactoryAware) singleton).setBeanFactory(this);
+                    }
 
                     // beanPostProcessor (Bean处理器)
                     // step 1 : postProcessBeforeInitialization
@@ -107,7 +112,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport {
         Object object = null;
         FactoryBean<?> factoryBean = (FactoryBean<?>) beanInstance;
         // object 为代理对象
-        System.out.println("factoryBean bean。beanName：" + beanName + "。Object：" + factoryBean);
+        System.out.println("beanName：" + beanName + " 对象是 FactoryBean 类型。Object：" + factoryBean);
+        System.out.println("下面获取 " + "beanName：" + beanName + " 对应的代理对象");
         object = getObjectFromFactoryBean(factoryBean, beanName);
         return object;
     }
@@ -241,7 +247,6 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport {
 
         PropertyValues propertyValues = beanDefinition.getPropertyValues();
         if (!propertyValues.isEmpty()) {
-            System.out.println("利用反射机制，使用 setter() 方法为对象的属性赋值 : " + beanDefinition.getId());
 
             for (int i = 0; i < propertyValues.size(); i++) {
                 PropertyValue propertyValue = propertyValues.getPropertyValueList().get(i);
@@ -299,6 +304,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport {
                     e.printStackTrace();
                 }
             }
+            System.out.println("利用反射机制，使用 setter() 方法为对象的属性赋值 : " + beanDefinition.getId());
         }
     }
 
@@ -307,4 +313,24 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport {
 
     abstract public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName)
             throws BeansException;
+
+    @Override
+    public boolean containsBean(String name) {
+        return containsSingleton(name);
+    }
+
+    @Override
+    public boolean isSingleton(String name) {
+        return this.beanDefinitionMap.get(name).isSingleton();
+    }
+
+    @Override
+    public boolean isPrototype(String name) {
+        return this.beanDefinitionMap.get(name).isPrototype();
+    }
+
+    @Override
+    public Class<?> getType(String name) {
+        return this.beanDefinitionMap.get(name).getClass();
+    }
 }

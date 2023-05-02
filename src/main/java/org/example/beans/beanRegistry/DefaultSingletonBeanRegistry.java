@@ -20,7 +20,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
             this.singletonObjects.put(beanName, singletonObject);
             this.beanNames.add(beanName);
-            System.out.println("已经将创建好的对象存储到了数据结构中" + beanName);
+            System.out.println("已经将创建好的对象 " + beanName + " 存储到了数据结构中");
         }
     }
 
