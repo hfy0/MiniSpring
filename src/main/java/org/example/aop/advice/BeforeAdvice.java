@@ -1,4 +1,4 @@
 package org.example.aop.advice;
 
-public interface BeforeAdvice {
+public interface BeforeAdvice extends Advice {
 }

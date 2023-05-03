@@ -3,9 +3,14 @@
     <!-- 测试 AOP -->
     <bean id="action" class="org.example.aop.factoryBean.ProxyFactoryBean">
         <property type="java.lang.Object" name="target" ref="realAction"/>
-        <property type="String" name="interceptorName" value="myInterceptor"/>
+        <property type="String" name="interceptorName" value="advisor"/>
     </bean>
 
     <bean id="realAction" class="org.example.test.aop.Action1"/>
-    <bean id="myInterceptor" class="org.example.test.aop.MyInterceptor"/>
+    <!-- <bean id="myInterceptor" class="org.example.test.aop.MyInterceptor"/>-->
+    <bean id="advisor" class="org.example.aop.pointcut.NameMatchMethodPointcutAdvisor">
+        <property type="org.example.aop.advice.Advice" name="advice" ref="beforeAdvice"/>
+        <property type="String" name="mappedName" value="do*"/>
+    </bean>
+    <bena id="beforeAdvice" class="org.example.test.aop.MyBeforeAdvice"/>
 </beans>

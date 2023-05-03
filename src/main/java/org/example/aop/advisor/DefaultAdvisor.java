@@ -1,5 +1,6 @@
 package org.example.aop.advisor;
 
+import org.example.aop.advice.Advice;
 import org.example.aop.advice.interceptor.MethodInterceptor;
 
 import java.util.Objects;
@@ -18,4 +19,8 @@ public class DefaultAdvisor implements Advisor {
         return this.methodInterceptor;
     }
 
+    @Override
+    public Advice getAdvice() {
+        return this.methodInterceptor;
+    }
 }

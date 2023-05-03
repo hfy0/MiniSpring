@@ -15,6 +15,7 @@ public class MainTestAOP {
             // 测试 AOP
             IAction action = (IAction) ctx.getBean("action");
             action.doAction();
+            action.doSomething();
 
         } catch (Throwable e) {
             e.printStackTrace();
